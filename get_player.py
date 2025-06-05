@@ -6,10 +6,11 @@ def dropUnnamed(df):
     df = df.loc[:,~df.columns.str.contains('^Unnamed')]
     return(df)
 
-idlookup_df = pd.read_csv('IDLookupTable.csv')
-idlookup_df = dropUnnamed(idlookup_df)
+def id_dic():
+    idlookup_df = pd.read_csv('IDLookupTable.csv')
+    idlookup_df = dropUnnamed(idlookup_df)
 
-p_lookup_dict = dict(zip(idlookup_df.MLBID,idlookup_df.PLAYERNAME))
+    return dict(zip(idlookup_df.MLBID,idlookup_df.PLAYERNAME))
 
 def getPlayerName_list(pidlist):
     for playerid in pidlist:
@@ -28,6 +29,3 @@ def getPlayerName_list(pidlist):
     
     idlookup_df = dropUnnamed(idlookup_df)
     idlookup_df.to_csv('IDLookupTable.csv')
-
-
-p_lookup_dict = dict(zip(idlookup_df.MLBID,idlookup_df.PLAYERNAME))
