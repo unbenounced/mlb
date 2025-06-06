@@ -10,3 +10,9 @@ def loadSav(startdate,enddate):
     sav['BatterName'] = sav['batter'].map(gp.id_dic())
     sav['player_name'] = sav['pitcher'].map(gp.id_dic())
     return(sav)
+
+def yesterday_sav():
+    sav = pyb.statcast()
+    sav['BatterName'] = sav['batter'].map(gp.id_dic())
+    sav['player_name'] = sav['pitcher'].map(gp.id_dic())
+    return(sav)
