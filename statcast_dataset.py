@@ -1,5 +1,4 @@
-import pybaseball as pyb
-import pandas as pd
+import pandas as pd, pybaseball as pyb
 import get_player as gp
 
 
