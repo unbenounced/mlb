@@ -27,6 +27,8 @@ is_hit_dict = {'field_out':0,'nan':0,'strikeout':0,'double':1,'strikeout_double_
                 'sac_fly_double_play':0,'pickoff_caught_stealing_home':0,'pickoff_2b':0,'run':0,'triple_play':0,'batter_interference':0,
                 'pickoff_3b':0,'sac_bunt_double_play':0,'pickoff_caught_stealing_3b':0}
 
+is_hit_list = ['single','double','triple','homerun']
+
 swing_dict = {'ball':0,'foul_tip':1,'called_strike':0,'swinging_strike':1, 'pitchout': 0, 'bunt_foul_tip': 1,
                 'foul':1,'hit_into_play_no_out':1,'hit_into_play':1,'hit_into_play_score':1, 'missed_bunt': 1,
                 'hit_by_pitch':0,'blocked_ball':0,'swinging_strike_blocked':1, 'foul_bunt': 1}
@@ -94,8 +96,8 @@ def add_ons(sav,idlookup_df):
   sav['AB_flag'] = sav['events'].map(ab_flag_dict)
   sav['AB_flag'] = sav['AB_flag'].fillna(0)
 
-  sav['Is_Hit'] = sav['events'].map(is_hit_dict)
-  sav['Is_Hit'] = sav['Is_Hit'].fillna(0)
+  sav['Is_Hit'] = sav['events'].isin(is_hit_list).astype(int)
+ 
   sav['SwungOn'] = sav['description'].map(swing_dict)
   sav['ContactMade_Fair'] = sav['description'].map(fair_contact_dict)
   sav['ContactMade_Foul'] = sav['description'].map(foul_contact_dict)
