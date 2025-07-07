@@ -1,8 +1,10 @@
+#%%
 import pandas as pd, pybaseball as pyb, os, requests, warnings, time, random
 from unidecode import unidecode
 from bs4 import BeautifulSoup, Comment
 
 def id_dic(idlookup_df):
+  idlookup_df = idlookup_df.loc[:, ~idlookup_df.columns.str.contains('^Unnamed')]
   return dict(zip(idlookup_df.MLBID,idlookup_df.PLAYERNAME))
 
 # get players from their player id numbers from the mlb api
@@ -101,10 +103,28 @@ def load_sav(idlookup_df,startdate="",enddate=""):
   nan_batters = sav.loc[nan_mask, 'batter'].unique().tolist()
   print(len(nan_batters))
   
-  if nan_batters > 0: 
+  if len(nan_batters) > 0: 
     idlookup_df = idlookup_new(idlookup_df,nan_batters)
     sav.loc[nan_mask, 'batter_name'] = sav.loc[nan_mask, 'batter'].map(id_lookup)
   
   return(sav)
 
-# need to figure out how to add a yesteday's data to our exsiting sav25
+# %%
+today = pd.to_datetime('today')
+idlookup_df = pd.read_csv('data/IDLookupTable.csv')
+yesterday = today - pd.Timedelta('1 day')
+try:
+  sav25 = pd.read_csv('data/sav25.csv')
+  sav25['game_date'] = pd.to_datetime(sav25['game_date'])
+  if pd.to_datetime(sav25['game_date'].max()) != pd.to_datetime(yesterday):
+    missing_days_df = load_sav(idlookup_df,sav25['game_date'].max().strftime('%Y-%m-%d'),yesterday.strftime('%Y-%m-%d'))
+    sav25 = pd.concat([sav25,missing_days_df],ignore_index=False)
+    sav25.to_csv('data/sav25.csv',index=False)
+except FileNotFoundError:
+  sav25 = load_sav(idlookup_df,'2025-02-20',yesterday.strftime('%Y-%m-%d'))
+  sav25.to_csv('data/sav25.csv',index=False)
+
+# %%
+sav25.sort_values('game_date',ascending=False).head()
+# %%
+# need to clean up how to add yesteday's data to our exsiting sav25
