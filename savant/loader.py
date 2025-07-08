@@ -86,7 +86,7 @@ def getPlayerName_list(pidlist,idlookup_df):
       print('Found nothing for {}'.format(playerid))
       pass
     
-  idlookup_df.to_csv('data/IDLookupTable.csv')
+  idlookup_df.to_csv('data/IDLookupTable.csv', index=False)
 
 
 def load_sav(idlookup_df,startdate="",enddate=""):
@@ -116,15 +116,15 @@ yesterday = today - pd.Timedelta('1 day')
 try:
   sav25 = pd.read_csv('data/sav25.csv')
   sav25['game_date'] = pd.to_datetime(sav25['game_date'])
-  if pd.to_datetime(sav25['game_date'].max()) != pd.to_datetime(yesterday):
+
+  if pd.to_datetime(sav25['game_date'].max()) != pd.to_datetime(yesterday.floor('D')):
     missing_days_df = load_sav(idlookup_df,sav25['game_date'].max().strftime('%Y-%m-%d'),yesterday.strftime('%Y-%m-%d'))
-    sav25 = pd.concat([sav25,missing_days_df],ignore_index=False)
+    sav25 = pd.concat([sav25,missing_days_df],ignore_index=True)
     sav25.to_csv('data/sav25.csv',index=False)
+
 except FileNotFoundError:
   sav25 = load_sav(idlookup_df,'2025-02-20',yesterday.strftime('%Y-%m-%d'))
   sav25.to_csv('data/sav25.csv',index=False)
 
 # %%
 sav25.sort_values('game_date',ascending=False).head()
-# %%
-# need to clean up how to add yesteday's data to our exsiting sav25
