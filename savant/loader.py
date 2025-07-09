@@ -1,13 +1,21 @@
-#%%
 import pandas as pd, pybaseball as pyb, os, requests, warnings, time, random
 from unidecode import unidecode
 from bs4 import BeautifulSoup, Comment
 
+# turns id look up dataframe into a dictionary
 def id_dic(idlookup_df):
   idlookup_df = idlookup_df.loc[:, ~idlookup_df.columns.str.contains('^Unnamed')]
   return dict(zip(idlookup_df.MLBID,idlookup_df.PLAYERNAME))
 
-# get players from their player id numbers from the mlb api
+def data_file_update(df,filename):
+  path = f'savant/data/{filename}.csv'
+  df.to_csv(path,index=False)
+
+def read_data_file(filename):
+  path = f'savant/data/{filename}.csv'
+  return pd.read_csv(path) 
+
+# get missing players from their player id numbers from the mlb api
 def idlookup_new(idlookup_df,nan_batters):
   session = requests.Session()
 
@@ -85,8 +93,8 @@ def getPlayerName_list(pidlist,idlookup_df):
     except:
       print('Found nothing for {}'.format(playerid))
       pass
-    
-  idlookup_df.to_csv('data/IDLookupTable.csv', index=False)
+
+  data_file_update(idlookup_df,'IDLookupTable')
 
 
 def load_sav(idlookup_df,startdate="",enddate=""):
@@ -109,22 +117,25 @@ def load_sav(idlookup_df,startdate="",enddate=""):
   
   return(sav)
 
-# %%
+
 today = pd.to_datetime('today')
-idlookup_df = pd.read_csv('data/IDLookupTable.csv')
+idlookup_df = read_data_file('IDLookupTable')
 yesterday = today - pd.Timedelta('1 day')
 try:
-  sav25 = pd.read_csv('data/sav25.csv')
+  sav25 = read_data_file('sav25')
   sav25['game_date'] = pd.to_datetime(sav25['game_date'])
 
   if pd.to_datetime(sav25['game_date'].max()) != pd.to_datetime(yesterday.floor('D')):
     missing_days_df = load_sav(idlookup_df,sav25['game_date'].max().strftime('%Y-%m-%d'),yesterday.strftime('%Y-%m-%d'))
     sav25 = pd.concat([sav25,missing_days_df],ignore_index=True)
-    sav25.to_csv('data/sav25.csv',index=False)
+
+    # wire up removing dulicates
+    #sav25['pitch_id'] = sav25['']
+
+    # save updated file to drive
+    data_file_update(sav25,'sav25')
 
 except FileNotFoundError:
   sav25 = load_sav(idlookup_df,'2025-02-20',yesterday.strftime('%Y-%m-%d'))
-  sav25.to_csv('data/sav25.csv',index=False)
+  data_file_update(sav25,'sav25')
 
-# %%
-sav25.sort_values('game_date',ascending=False).head()
