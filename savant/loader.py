@@ -129,13 +129,13 @@ try:
     missing_days_df = load_sav(idlookup_df,sav25['game_date'].max().strftime('%Y-%m-%d'),yesterday.strftime('%Y-%m-%d'))
     sav25 = pd.concat([sav25,missing_days_df],ignore_index=True)
 
-    # wire up removing dulicates
-    #sav25['pitch_id'] = sav25['']
-
-    # save updated file to drive
-    data_file_update(sav25,'sav25')
-
 except FileNotFoundError:
   sav25 = load_sav(idlookup_df,'2025-02-20',yesterday.strftime('%Y-%m-%d'))
-  data_file_update(sav25,'sav25')
+  sav25['game_date'] = pd.to_datetime(sav25['game_date'])
 
+# wire up pitch id and removing duplicates
+sav25['pitch_id'] =  sav25['game_pk'].astype(str) + sav25['pitcher'].astype(str) + sav25['batter'].astype(str) + sav25['at_bat_number'].astype(str) + sav25['pitch_number'].astype(str)
+sav25 = sav25.drop_duplicates(subset='pitch_id')
+
+# update sav25 file in drive
+data_file_update(sav25,'sav25')
