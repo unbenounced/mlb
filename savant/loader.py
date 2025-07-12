@@ -56,7 +56,6 @@ USER_AGENT_LIST = [
   "Mozilla/5.0 (Linux; Linux armv7l; KFFOWI) AppleWebKit/537.36 (KHTML, like Gecko) Silk/110.4.3 like Chrome/110.0.5481.100 Safari/537.36",
 ] 
 
-# get missing players from their player id numbers from the mlb api
 def idlookup_new(
   idlookup_df: pd.DataFrame,
   nan_batters: List[int],
@@ -69,7 +68,7 @@ def idlookup_new(
   rows: list[dict[str, str | int]] = []
   for pid in nan_batters:
     url = f"https://statsapi.mlb.com/api/v1/people/{pid}"
-    time.sleep(random.uniform(0.5,2.0)) # wait between 0.5 and 2 seconds
+    time.sleep(random.uniform(0.5,2.0))
     session.headers.update({'User-Agent': random.choice(USER_AGENT_LIST)})
 
     try:
