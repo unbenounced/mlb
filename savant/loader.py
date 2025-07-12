@@ -28,6 +28,13 @@ def data_file_update(df: pd.DataFrame, filename: str) -> None:
 def read_data_file(filename: str) -> pd.DataFrame:
   return pd.read_csv(DATA_DIR / f"{filename}.csv")
 
+# ────────────────── Statcast ETL ──────────────────
+def load_sav(
+  startdate: str = "",
+  enddate: str = "",
+) -> pd.DataFrame:
+  return pyb.statcast(startdate, enddate)
+
  # ────────────────── Player‑name back‑fill ──────────────────
 USER_AGENT_LIST = [
   # Windows Desktop
@@ -88,38 +95,26 @@ def idlookup_new(
   
   return idlookup_df
 
-# ────────────────── Statcast ETL ──────────────────
-def load_sav(
-  idlookup_df: pd.DataFrame,
-  startdate: str = "",
-  enddate: str = "",
+def find_nanbatters(
+  sav: pd.DataFrame,
+  idlookup_df: pd.DataFrame
 ) -> pd.DataFrame:
-  sav = pyb.statcast(startdate, enddate)
+  """
+  Checks for missing batter IDs in idlookup_df and fetches names via MLB API if needed.
+  Returns an updated idlookup_df.
+  """
+  # Finding id's that are NOT in the lookup
+  missing_ids = list(set(sav["batter"]) - set(id_dic(idlookup_df)))  
+  if missing_ids:
+    idlookup_df = idlookup_new(idlookup_df, missing_ids)
   
-  # initial name mapping
-  sav["batter_name"] = sav["batter"].map(id_dic(idlookup_df))
-  sav["pitcher_name"] = (
-      sav["player_name"].str.split(", ").str[::-1].str.join(" ")
-  )
-
-  # ►  Trans‑literate to plain ASCII  ◄
-  sav["batter_name"] = sav["batter_name"].apply(unidecode)
-  sav["player_name"] = sav["player_name"].apply(unidecode)
-
-  # back-fill missing batter names
-  missing = sav.loc[sav["batter_name"].isna(), "batter"].unique().tolist()
-  if missing:
-    idlookup_df = idlookup_new(idlookup_df, missing)
-    sav["batter_name"] = sav["batter"].map(id_dic(idlookup_df)).apply(unidecode)
+  return idlookup_df
   
-  return(sav)
-
 # ────────────────── Main ──────────────────
 def main() -> None:
   today = pd.Timestamp.today().normalize()
   yesterday = today - pd.Timedelta(days=1)
   
-  idlookup_df = read_data_file("IDLookupTable")
   try:
     sav25 = read_data_file("sav25")
     sav25["game_date"] = pd.to_datetime(sav25["game_date"])
@@ -127,24 +122,15 @@ def main() -> None:
     latest_in_file = sav25["game_date"].max().floor("D")
     if latest_in_file < yesterday:
       missing = load_sav(
-        idlookup_df,
         latest_in_file.strftime("%Y-%m-%d"),
         yesterday.strftime("%Y-%m-%d"),
       )
       sav25 = pd.concat([sav25, missing], ignore_index=True)
   except FileNotFoundError:
-    sav25 = load_sav(idlookup_df,"2025-02-20", yesterday.strftime("%Y-%m-%d"))
-    sav25["game_date"] = pd.to_datetime(sav25["game_date"])
+    sav25 = load_sav("2025-02-20", yesterday.strftime("%Y-%m-%d"))
 
-  # unique pitch identifier
-  sav25["pitch_id"] =  (
-    sav25["game_pk"].astype(str) 
-    + sav25["pitcher"].astype(str) 
-    + sav25["batter"].astype(str) 
-    + sav25["at_bat_number"].astype(str) 
-    + sav25["pitch_number"].astype(str)
-  )
-  sav25 = sav25.drop_duplicates(subset="pitch_id")
+  idlookup_df = read_data_file("IDLookupTable")
+  idlookup_df = find_nanbatters(sav25, idlookup_df)
 
   data_file_update(sav25,"sav25")
   print("sav25 updated →", DATA_DIR / "sav25.csv")
