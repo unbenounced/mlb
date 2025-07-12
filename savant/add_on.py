@@ -1,6 +1,6 @@
 import pandas as pd, numpy as np
 from unidecode import unidecode
-import get_player as gp
+
 
 pa_flag_dict = {'field_out':1,'nan':0,'strikeout':1,'double':1,'strikeout_double_play':1,
                 'single':1,'force_out':1,'hit_by_pitch':1,'grounded_into_double_play':1,
