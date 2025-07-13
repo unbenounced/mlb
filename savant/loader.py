@@ -77,13 +77,14 @@ def find_nanbatters(
   Returns an updated idlookup_df.
   """
   # Finding id's that are NOT in the lookup
-  missing_ids = list(set(sav["batter"]) - set(id_dic(idlookup_df)))  
+  # missing_ids = list(set(sav["batter"]) - set(id_dic(idlookup_df)))
+  missing_ids = [823356]
   if missing_ids:
     print(f"Missing IDs: {len(missing_ids)}")
     idlookup_df = idlookup_new(idlookup_df, missing_ids)
     data_file_update(idlookup_df, "IDLookupTable")
     print("idlookup_df updated →", DATA_DIR / "IDLookupTable.csv")
-    
+
   return idlookup_df
   
 # ────────────────── Main ──────────────────
