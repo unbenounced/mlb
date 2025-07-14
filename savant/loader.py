@@ -17,11 +17,6 @@ DATA_DIR = Path("savant/data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 # ──────────────────────── Helpers ────────────────────────
-def id_dic(idlookup_df: pd.DataFrame) -> dict[int, str]:
-  """Turn ID‑lookup DataFrame into {MLBID: PLAYERNAME} dict."""
-  clean = idlookup_df.loc[:, ~idlookup_df.columns.str.contains('^Unnamed')]
-  return dict(zip(clean["MLBID"], clean["PLAYERNAME"]))
-
 def data_file_update(df: pd.DataFrame, filename: str) -> None:
   (DATA_DIR / f"{filename}.csv").write_text(df.to_csv(index=False))
 
@@ -77,7 +72,7 @@ def find_nanbatters(
   Returns an updated idlookup_df.
   """
   # Finding id's that are NOT in the lookup
-  missing_ids = list(set(sav["batter"]) - set(id_dic(idlookup_df)))
+  missing_ids = list(set(sav["batter"]) - set(dict(zip(idlookup_df["MLBID"], idlookup_df["PLAYERNAME"]))))
   if missing_ids:
     print(f"Missing IDs: {len(missing_ids)}")
     idlookup_df = idlookup_new(idlookup_df, missing_ids)

@@ -13,25 +13,51 @@ DATA_DIR = Path("data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 lookup = pd.read_csv(DATA_DIR / "IDLookupTable.csv")
+sav = pd.read_csv(DATA_DIR / "sav25.csv")
 
-# unique pitch identifier
-# sav25["pitch_id"] =  (
-#   sav25["game_pk"].astype(str) 
-#   + sav25["pitcher"].astype(str) 
-#   + sav25["batter"].astype(str) 
-#   + sav25["at_bat_number"].astype(str) 
-#   + sav25["pitch_number"].astype(str)
-# )
-# sav25 = sav25.drop_duplicates(subset="pitch_id")
-
-# sav["pitcher_name"] = (
-#   sav["player_name"].str.split(", ").str[::-1].str.join(" ")
-# )
-
-# sav["player_name"] = sav["player_name"].apply(unidecode)
-#   # ►  Trans‑literate to plain ASCII  ◄
-# sav["batter_name"] = sav["batter_name"].apply(unidecode)
+# ──────────────────────── Helpers ────────────────────────
 # %%
-lookup.head()
+def normalize_names(sav: pd.DataFrame, lookup: pd.DataFrame) -> pd.DataFrame:
+  out = sav.copy()
+  out["batter_name"] = out["batter"].map(dict(zip(lookup["MLBID"], lookup["PLAYERNAME"])))
+  out["batter_name"] = out["batter_name"].apply(unidecode)
 
+  out["pitcher_name"] = out["player_name"].str.split(', ').str[::-1].str.join(' ')
+  out["pitcher_name"] = out["pitcher_name"].apply(unidecode)
+
+  return out
+# %%
+def add_pitch_ids(sav: pd.DataFrame) -> pd.DataFrame:
+  out = sav.copy()
+  out["pitch_id"] =  (
+    out["game_pk"].astype(str) 
+    + out["pitcher"].astype(str) 
+    + out["batter"].astype(str) 
+    + out["at_bat_number"].astype(str) 
+    + out["pitch_number"].astype(str)
+  )
+  out['pa_id'] = (out["game_pk"].astype(str) + out["at_bat_number"].astype(str))
+  return out.drop_duplicates(subset="pitch_id")
+
+# %%
+pd.set_option('display.max_columns', 500)
+sav.head()
+# %%
+def prepare_game_dates(sav: pd.DataFrame) -> pd.DataFrame:
+  out = sav.copy()
+  """Convert game_date to datetime, sort by date, and extract game month."""
+  out["game_date"] = pd.to_datetime(out["game_date"])
+  out["game_month"] = out["game_date"].dt.month
+  out = out.sort_values(by="game_date", ascending=False)
+  return out
+
+# %%
+def add_ons(sav, lookup):
+  sav = normalize_names(sav, lookup)
+  sav = add_pitch_ids(sav)
+  sav = prepare_game_dates(sav)
+  return sav
+# %%
+new_sav = add_ons(sav, lookup)
+new_sav.head()
 # %%
