@@ -52,7 +52,7 @@ foul_contact_list = ["foul", "hit_into_play_no_out", "hit_into_play", "hit_into_
 
 inplay_list = ["hit_into_play_no_out", "hit_into_play", "hit_into_play_score"]
 
-isoutdict = {
+is_out_dict = {
   "fielders_choice": 0, "field_out": 1, "strikeout": 1, "sac_bunt": 1, "fielders_choice_out": 1, "force_out": 1, "caught_stealing_3b": 1, 
   "caught_stealing_2b":1, "sac_fly": 1, "other_out": 1, "pickoff_caught_stealing_3b":1, "pickoff_1b": 1, "caught_stealing_home": 1, 
   "pickoff_2b": 1, "pickoff_3b": 1, "sac_bunt_double_play": 2,  "strikeout_double_play": 2, "sac_fly_double_play": 2, "double_play": 2, 
@@ -65,3 +65,9 @@ my_des_dict = {
   "swinging_strike_blocked": "Whiff", "foul_tip": "Foul", "foul_bunt": "Foul",
   "missed_bunt": "whiff", "pitchout": "Ball", "bunt_foul_tip": "Foul"
 }
+
+month_name_dict = {3: "March", 4: "April", 5: "May", 6: "June", 7: "July", 8: "August", 9: "September", 10: "October"}
+
+pitch_name_dict = {"2-Seam Fastball": "Sinker", "Knuckle Curve": "Curveball", "Fastball": "4-Seam Fastball"}
+
+pitch_type_dict = {"KC": "CU", "FA": "FF"}

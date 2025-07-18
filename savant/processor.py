@@ -10,6 +10,8 @@ from unidecode import unidecode
 
 # ──────────────────────── Paths ────────────────────────
 DATA_DIR = Path("data")
+if not DATA_DIR.exists():
+  DATA_DIR = Path("savant/data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 lookup = pd.read_csv(DATA_DIR / "IDLookupTable.csv")
@@ -48,16 +50,26 @@ def prepare_game_dates(sav: pd.DataFrame) -> pd.DataFrame:
   """Convert game_date to datetime, sort by date, and extract game month."""
   out["game_date"] = pd.to_datetime(out["game_date"])
   out["game_month"] = out["game_date"].dt.month
+  out["month"] = out["game_date"].dt.month
+  out["month"] = out["month"].replace(cfg.month_name_dict)
   out = out.sort_values(by="game_date", ascending=False)
   return out
 
+def pitches(sav: pd.DataFrame) -> pd.DataFrame:
+  out = sav.copy()
+  out["pitches_thrown"] = 1
+  out["pitch_name"] = out["pitcher_name"].replace(cfg.pitch_name_dict)
+  out["pitch_type"] = out["pitch_type"].replace(cfg.pitch_type_dict)
+  return out
 # %%
 def add_ons(sav, lookup):
   sav = normalize_names(sav, lookup)
   sav = add_pitch_ids(sav)
   sav = prepare_game_dates(sav)
+  sav = pitches(sav)
   return sav
 # %%
 new_sav = add_ons(sav, lookup)
 new_sav.head()
+
 # %%
