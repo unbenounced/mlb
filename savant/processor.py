@@ -42,9 +42,6 @@ def add_pitch_ids(sav: pd.DataFrame) -> pd.DataFrame:
   return out.drop_duplicates(subset="pitch_id")
 
 # %%
-pd.set_option('display.max_columns', 500)
-sav.head()
-# %%
 def prepare_game_dates(sav: pd.DataFrame) -> pd.DataFrame:
   out = sav.copy()
   """Convert game_date to datetime, sort by date, and extract game month."""
@@ -60,11 +57,10 @@ def pitches(sav: pd.DataFrame) -> pd.DataFrame:
   out["pitches_thrown"] = 1
   out["pitch_name"] = out["pitcher_name"].replace(cfg.pitch_name_dict)
   out["pitch_type"] = out["pitch_type"].replace(cfg.pitch_type_dict)
-
   return out
 
 # %%
-def pitcher_stats(sav: pd.DataFrame) -> pd.DataFrame:
+def pitcher_flags(sav: pd.DataFrame) -> pd.DataFrame:
   out = sav.copy()
   out.loc[
     (out["inning"]==1)
@@ -105,21 +101,50 @@ def batter_stats(sav: pd.DataFrame) -> pd.DataFrame:
   out["fair_ball"] = out["description"].isin(cfg.fair_contact_list).astype(int)
   out["foul_ball"] = out["description"].isin(cfg.foul_contact_list).astype(int)
   out["in_play"] = out["description"].isin(cfg.inplay_list).astype(int)
-  out["foul"] = (out["description"] == 'foul').astype(int)
+  out["foul"] = out["description"].isin(cfg.foul_list).astype(int)
+  out["outs_made"] = out["events"].map(cfg.is_out_dict)
+  return out
+
+# %%
+def defense(sav: pd.DataFrame) -> pd.DataFrame:
+  out = sav.copy()
+  out["shift_on"] = ((out["if_fielding_alignment"].isin(cfg.infield_alignment_list)) & (out["plate_appearance"] == 1)).astype(int)
+  return out
+
+
+# %%
+def pitcher_stats(sav: pd.DataFrame) -> pd.DataFrame:
+  out = sav.copy()
+  out["swinging_strike"] = out["description"].isin(cfg.swinging_strike_list).astype(int)
+  out["called_strike"] = out["desctipion"].isin(cfg.called_strike_list).astype(int)
+  out["whiff"] = ((out["swinging_strike"] == 1) & (out["swing"] == 1)).astype(int)
   return out
 # %%
-def add_ons(sav, lookup):
+def add_ons(sav: pd.DataFrame, lookup: pd.DataFrame) -> pd.DataFrame:
   sav = normalize_names(sav, lookup)
   sav = add_pitch_ids(sav)
   sav = prepare_game_dates(sav)
   sav = pitches(sav)
+  sav = pitcher_flags(sav)
   sav = pitcher_stats(sav)
   sav = batter_stats(sav)
+  sav = defense(sav)
   return sav
 
+# %%
+pd.set_option('display.max_columns', 500)
 # %%
 new_sav = add_ons(sav, lookup)
 new_sav.head()
 # %%
 print(new_sav["at_bat"].isna().sum())
+# %%
+new_sav["shift_on"].value_counts()
+# %%
+new_sav["if_fielding_alignment"].value_counts()
+# %%
+sav = add_ons(sav, lookup)
+sav.head()
+# %%
+sav["shift_on"].value_counts()
 # %%

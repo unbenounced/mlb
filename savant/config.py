@@ -46,9 +46,15 @@ swing_list = [
   "hit_into_play_score", "missed_bunt", "swinging_strike_blocked", "foul_bunt"
 ]
 
+swinging_strike_list = ["swinging_strike", "swinging_strike_blocked", "missed_bunt", "foul_tip"]
+
+called_strike_list = ["called_strike"]
+
 fair_contact_list = ["hit_into_play_no_out", "hit_into_play", "hit_into_play_score"]
 
 foul_contact_list = ["foul", "hit_into_play_no_out", "hit_into_play", "hit_into_play_score", "foul_bunt"]
+
+foul_list = ["foul"]
 
 inplay_list = ["hit_into_play_no_out", "hit_into_play", "hit_into_play_score"]
 
@@ -78,3 +84,5 @@ pitch_categories = {"4-Seam Fastball": "Fastball", "Changeup": "Offspeed", "Slid
                     "Screwball": "Breaking","Eephus": "Offspeed","Knuckleball": "Offspeed",
                     "Sweeper": "Breaking", "Slow Curve": "Breaking", "Slurve": "Breaking", "Forkball": "Offspeed"
 }
+
+infield_alignment_list = ["Infield shade"]
