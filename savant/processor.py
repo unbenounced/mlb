@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
-import pandas as np
+import numpy as np
 import config as cfg
 from unidecode import unidecode
 
@@ -60,6 +60,52 @@ def pitches(sav: pd.DataFrame) -> pd.DataFrame:
   out["pitches_thrown"] = 1
   out["pitch_name"] = out["pitcher_name"].replace(cfg.pitch_name_dict)
   out["pitch_type"] = out["pitch_type"].replace(cfg.pitch_type_dict)
+
+  return out
+
+# %%
+def pitcher_stats(sav: pd.DataFrame) -> pd.DataFrame:
+  out = sav.copy()
+  out.loc[
+    (out["inning"]==1)
+    &(out ["balls"]==0)
+    &(out ["strikes"]==0)
+    &(out ["inning_topbot"]=="Top")
+    &(out ["outs_when_up"]==0)
+    &(out["away_score"]==0)
+    &(out ["on_1b"].isna())
+    &(out ["on_2b"].isna())
+    &(out ["on_3b"].isna()),
+    "home_sp"
+  ] = 1
+  out["home_sp"] = out["home_sp"].fillna(0).astype(int)
+  out.loc[
+    (out["inning"]==1) &
+    (out ["balls"]==0) &
+    (out ["strikes"]==0) &
+    (out ["inning_topbot"]=="Bot") &
+    (out ["outs_when_up"]==0) &
+    (out["home_score"]==0) &
+    (out ["on_1b"].isna()) &
+    (out ["on_2b"].isna()) &
+    (out["on_3b"].isna()),
+    "away_sp"
+  ] = 1
+  out["away_sp"] = out["away_sp"].fillna(0).astype(int)
+  return out
+
+
+# %%
+def batter_stats(sav: pd.DataFrame) -> pd.DataFrame:
+  out = sav.copy()
+  out["plate_appearance"] = out["events"].isin(cfg.pa_flag_list).astype(int)
+  out["at_bat"] = out["events"].isin(cfg.ab_flag_list).astype(int)
+  out["hit"] = out["events"].isin(cfg.is_hit_list).astype(int)
+  out["swing"] = out["description"].isin(cfg.swing_list).astype(int)
+  out["fair_ball"] = out["description"].isin(cfg.fair_contact_list).astype(int)
+  out["foul_ball"] = out["description"].isin(cfg.foul_contact_list).astype(int)
+  out["in_play"] = out["description"].isin(cfg.inplay_list).astype(int)
+  out["foul"] = (out["description"] == 'foul').astype(int)
   return out
 # %%
 def add_ons(sav, lookup):
@@ -67,9 +113,13 @@ def add_ons(sav, lookup):
   sav = add_pitch_ids(sav)
   sav = prepare_game_dates(sav)
   sav = pitches(sav)
+  sav = pitcher_stats(sav)
+  sav = batter_stats(sav)
   return sav
+
 # %%
 new_sav = add_ons(sav, lookup)
 new_sav.head()
-
+# %%
+print(new_sav["at_bat"].isna().sum())
 # %%

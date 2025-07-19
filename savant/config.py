@@ -71,3 +71,10 @@ month_name_dict = {3: "March", 4: "April", 5: "May", 6: "June", 7: "July", 8: "A
 pitch_name_dict = {"2-Seam Fastball": "Sinker", "Knuckle Curve": "Curveball", "Fastball": "4-Seam Fastball"}
 
 pitch_type_dict = {"KC": "CU", "FA": "FF"}
+
+pitch_categories = {"4-Seam Fastball": "Fastball", "Changeup": "Offspeed", "Slider": "Breaking",
+                    "Curveball": "Breaking", "Sinker": "Fastball", "Cutter": "Fastball",
+                    "Split-Finger": "Offspeed", "Knuckle Curve": "Breaking", "Fastball": "Fastball",
+                    "Screwball": "Breaking","Eephus": "Offspeed","Knuckleball": "Offspeed",
+                    "Sweeper": "Breaking", "Slow Curve": "Breaking", "Slurve": "Breaking", "Forkball": "Offspeed"
+}
