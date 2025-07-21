@@ -13,8 +13,13 @@ import requests
 from bs4 import BeautifulSoup, Comment
 
 # ──────────────────────── Paths ────────────────────────
-DATA_DIR = Path("savant/data")
+DATA_DIR = Path("data")
+if not DATA_DIR.exists():
+  DATA_DIR = Path("savant/data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+lookup = pd.read_csv(DATA_DIR / "IDLookupTable.csv")
+sav = pd.read_csv(DATA_DIR / "sav25.csv")
 
 # ──────────────────────── Helpers ────────────────────────
 def data_file_update(df: pd.DataFrame, filename: str) -> None:

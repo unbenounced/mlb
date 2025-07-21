@@ -24,39 +24,43 @@ USER_AGENT_LIST = [
   # Amazon Silk (Fire Tablet)
   "Mozilla/5.0 (Linux; Linux armv7l; KFFOWI) AppleWebKit/537.36 (KHTML, like Gecko) Silk/110.4.3 like Chrome/110.0.5481.100 Safari/537.36",
 ] 
-
 pa_flag_list = [
   "field_out", "strikeout", "double", "strikeout_double_play", "single", "force_out", "hit_by_pitch", 
   "grounded_into_double_play", "home_run", "walk", "sac_bunt", "triple", "sac_fly", "field_error", "double_play", 
   "catcher_interf", "fielders_choice_out", "fielders_choice", "sac_fly_double_play", "triple_play",
   "batter_interference", "sac_bunt_double_play"
 ]
-
-
 ab_flag_list = [
   "field_out", "strikeout", "double", "strikeout_double_play", "single", "force_out", "grounded_into_double_play",
   "home_run", "triple", "field_error", "double_play", "fielders_choice_out", "fielders_choice", "sac_fly_double_play",
   "triple_play", "batter_interference", "sac_bunt_double_play"
 ]
-
 is_hit_list = ["single", "double", "triple", "homerun"]
-
+single_list = ["single"]
+double_list = ["double"]
+triple_list = ["triple"]
+homerun_list = ["homerun"]
 swing_list = [
   "foul_tip", "swinging_strike", "bunt_foul_tip", "foul", "hit_into_play_no_out", "hit_into_play",
   "hit_into_play_score", "missed_bunt", "swinging_strike_blocked", "foul_bunt"
 ]
-
 swinging_strike_list = ["swinging_strike", "swinging_strike_blocked", "missed_bunt", "foul_tip"]
-
 called_strike_list = ["called_strike"]
+strike_list = ["S"]
+ball_list = ["B"]
+strikeout_list = ["strikeout", "strikeout_double_play"]
 
+ball_in_play_list = ["X"]
+walk_list = ["walk"]
+hit_by_pitch = ["hit_by_pitch"]
 fair_contact_list = ["hit_into_play_no_out", "hit_into_play", "hit_into_play_score"]
-
 foul_contact_list = ["foul", "hit_into_play_no_out", "hit_into_play", "hit_into_play_score", "foul_bunt"]
-
 foul_list = ["foul"]
-
 inplay_list = ["hit_into_play_no_out", "hit_into_play", "hit_into_play_score"]
+groundball_list = ["ground_ball"]
+linedrive_list = ["line_ball"]
+flyball_list = ["fly_ball"]
+popup_list = ["popup"]
 
 is_out_dict = {
   "fielders_choice": 0, "field_out": 1, "strikeout": 1, "sac_bunt": 1, "fielders_choice_out": 1, "force_out": 1, "caught_stealing_3b": 1, 
@@ -64,7 +68,6 @@ is_out_dict = {
   "pickoff_2b": 1, "pickoff_3b": 1, "sac_bunt_double_play": 2,  "strikeout_double_play": 2, "sac_fly_double_play": 2, "double_play": 2, 
   "grounded_into_double_play": 2,"triple_play": 3
 }
-
 my_des_dict = {
   "ball": "Ball", "hit_into_play": "In Play", "called_strike": "Called Strike",
   "foul": "Foul", "swinging_strike": "Whiff", "blocked_ball": "Ball",
@@ -73,16 +76,12 @@ my_des_dict = {
 }
 
 month_name_dict = {3: "March", 4: "April", 5: "May", 6: "June", 7: "July", 8: "August", 9: "September", 10: "October"}
-
 pitch_name_dict = {"2-Seam Fastball": "Sinker", "Knuckle Curve": "Curveball", "Fastball": "4-Seam Fastball"}
-
 pitch_type_dict = {"KC": "CU", "FA": "FF"}
-
 pitch_categories = {"4-Seam Fastball": "Fastball", "Changeup": "Offspeed", "Slider": "Breaking",
                     "Curveball": "Breaking", "Sinker": "Fastball", "Cutter": "Fastball",
                     "Split-Finger": "Offspeed", "Knuckle Curve": "Breaking", "Fastball": "Fastball",
                     "Screwball": "Breaking","Eephus": "Offspeed","Knuckleball": "Offspeed",
                     "Sweeper": "Breaking", "Slow Curve": "Breaking", "Slurve": "Breaking", "Forkball": "Offspeed"
 }
-
 infield_alignment_list = ["Infield shade"]
