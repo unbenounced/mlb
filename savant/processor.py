@@ -1,4 +1,3 @@
-#%%
 from __future__ import annotations
 
 from pathlib import Path
@@ -18,7 +17,6 @@ lookup = pd.read_csv(DATA_DIR / "IDLookupTable.csv")
 sav = pd.read_csv(DATA_DIR / "sav25.csv")
 
 # ──────────────────────── Helpers ────────────────────────
-# %%
 def normalize_names(sav: pd.DataFrame, lookup: pd.DataFrame) -> pd.DataFrame:
   out = sav.copy()
 
@@ -29,9 +27,11 @@ def normalize_names(sav: pd.DataFrame, lookup: pd.DataFrame) -> pd.DataFrame:
   out["pitcher_name"] = out["pitcher_name"].apply(unidecode)
 
   return out
-# %%
+
 def add_pitch_ids(sav: pd.DataFrame) -> pd.DataFrame:
   out = sav.copy()
+
+  out = out.drop_duplicates(subset=["game_pk", "at_bat_number", "pitch_number"])
 
   out["pitch_id"] =  (
     out["game_pk"].astype(str) 
@@ -42,9 +42,8 @@ def add_pitch_ids(sav: pd.DataFrame) -> pd.DataFrame:
   )
   out['pa_id'] = (out["game_pk"].astype(str) + out["at_bat_number"].astype(str))
 
-  return out.drop_duplicates(subset="pitch_id")
+  return out
 
-# %%
 def prepare_game_dates(sav: pd.DataFrame) -> pd.DataFrame:
   out = sav.copy()
 
@@ -66,24 +65,22 @@ def pitches(sav: pd.DataFrame) -> pd.DataFrame:
 
   return out
 
-# %%
 def pitcher_flags(sav: pd.DataFrame) -> pd.DataFrame:
   out = sav.copy()
 
-  out.loc[
-    (out["inning"]==1)
-    &(out ["balls"]==0)
-    &(out ["strikes"]==0)
-    &(out ["inning_topbot"]=="Top")
-    &(out ["outs_when_up"]==0)
-    &(out["away_score"]==0)
-    &(out ["on_1b"].isna())
-    &(out ["on_2b"].isna())
-    &(out ["on_3b"].isna()),
-    "home_sp"
-  ] = 1
-  out["home_sp"] = out["home_sp"].fillna(0)
-  out.loc[
+  out["is_home_sp"] = (
+    (out["inning"]==1) &
+    (out ["balls"]==0) &
+    (out ["strikes"]==0) &
+    (out ["inning_topbot"]=="Top") &
+    (out ["outs_when_up"]==0) &
+    (out["away_score"]==0) &
+    (out ["on_1b"].isna()) &
+    (out ["on_2b"].isna()) &
+    (out ["on_3b"].isna())
+  )
+ 
+  out["is_away_sp"] = (
     (out["inning"]==1) &
     (out["balls"]==0) &
     (out["strikes"]==0) &
@@ -92,20 +89,28 @@ def pitcher_flags(sav: pd.DataFrame) -> pd.DataFrame:
     (out["home_score"]==0) &
     (out["on_1b"].isna()) &
     (out["on_2b"].isna()) &
-    (out["on_3b"].isna()),
-    "away_sp"
-  ] = 1
-  out["away_sp"] = out["away_sp"].fillna(0)
+    (out["on_3b"].isna())
+  )
+
+  out["is_game_starter"] = (
+    (out["inning"]==1) &
+    (out["bat_score"]==0) &
+    (out["balls"]==0) &
+    (out["outs_when_up"]==0) &
+    (out["strikes"]==0) &
+    (out["pitch_number"]==1) &
+    (out["on_1b"].isna()) &
+    (out["on_2b"].isna()) &
+    (out["on_3b"].isna())
+  )
 
   return out
 
-
-# %%
 def batter_stats(sav: pd.DataFrame) -> pd.DataFrame:
   out = sav.copy()
 
   out["is_plate_appearance"] = out["events"].isin(cfg.pa_flag_list)
-  out["at_bat"] = out["events"].isin(cfg.ab_flag_list)
+  out["is_atbat"] = out["events"].isin(cfg.ab_flag_list)
   out["is_hit"] = out["events"].isin(cfg.is_hit_list)
   out["is_swing"] = out["description"].isin(cfg.swing_list)
   out["is_fair_ball"] = out["description"].isin(cfg.fair_contact_list)
@@ -142,11 +147,25 @@ def batter_stats(sav: pd.DataFrame) -> pd.DataFrame:
 
   out["is_bunt"] = ((out["is_ball_in_play"]) & (out["des"].str.contains("bunt", case=False, na=False)))
 
-  out[""]
+  out.loc[(out["is_atbat"]) & (out["estimated_ba_using_speedangle"].isna()), "estimated_ba_using_speedangle"] = 0
+  out.loc[(out["is_atbat"]) & (out["estimated_woba_using_speedangle"].isna()), "estimated_woba_using_speedangle"] = 0
+
+  out.loc[out["is_walk"], "estimated_woba_using_speedangle"] = .7
+
+  # Need to explore
+  out["blast_criteria_1"] = ((out["launch_speed"] >= 100) & out["is_ball_in_play"])
+  out["blast_criteria_2"] = (out["launch_angle"] <= 28) & ((28 - out["launch_angle"]) <= (out["launch_speed"] - 100))
+  out["blast_criteria_3"] = (out["launch_angle"] > 28) & ((out["launch_angle"] - 28) <= ((out["launch_speed"] - 100) * 3))
+  out["is_blast"] = out["blast_criteria_1"] & out["blast_criteria_2"] | out["blast_criteria_3"]
+
+  out["is_hardhit"] = (out["launch_speed"] >= 95) & out["is_atbat"]
+
+  out["is_barrel_homerun"] = out["is_barrel"] & out["is_homerun"]
+  out["is_blast_homerun"] = out["is_blast"] & out["is_homerun"]
+  out["is_hardhit_hit"] = out["is_hardhit"] & out["is_hit"]
 
   return out
 
-# %%
 def defense(sav: pd.DataFrame) -> pd.DataFrame:
   out = sav.copy()
 
@@ -154,8 +173,6 @@ def defense(sav: pd.DataFrame) -> pd.DataFrame:
 
   return out
 
-
-# %%
 def pitcher_stats(sav: pd.DataFrame) -> pd.DataFrame:
   out = sav.copy()
 
@@ -175,7 +192,7 @@ def pitcher_stats(sav: pd.DataFrame) -> pd.DataFrame:
   out["in_zone_foul"] = (out["is_foul_ball"] & out["in_zone"])
 
   return out
-# %%
+
 def add_ons(sav: pd.DataFrame, lookup: pd.DataFrame) -> pd.DataFrame:
   sav = normalize_names(sav, lookup)
   sav = add_pitch_ids(sav)
@@ -188,10 +205,7 @@ def add_ons(sav: pd.DataFrame, lookup: pd.DataFrame) -> pd.DataFrame:
 
   return sav
 
-# %%
 pd.set_option('display.max_columns', 500)
-# %%
+
 new_sav = add_ons(sav, lookup)
 new_sav.head()
-
-# %%
