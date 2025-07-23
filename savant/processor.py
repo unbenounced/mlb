@@ -207,5 +207,6 @@ def add_ons(sav: pd.DataFrame, lookup: pd.DataFrame) -> pd.DataFrame:
 
 pd.set_option('display.max_columns', 500)
 
-new_sav = add_ons(sav, lookup)
-new_sav.head()
+sav = add_ons(sav, lookup)
+
+sav.to_csv(DATA_DIR / "add_ons.csv", index=False)
