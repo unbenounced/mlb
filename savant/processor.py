@@ -60,7 +60,7 @@ def pitches(sav: pd.DataFrame) -> pd.DataFrame:
   out = sav.copy()
 
   out["pitches_thrown"] = 1
-  out["pitch_name"] = out["pitcher_name"].replace(cfg.pitch_name_dict)
+  out["pitch_name"] = out["pitch_name"].replace(cfg.pitch_name_dict)
   out["pitch_type"] = out["pitch_type"].replace(cfg.pitch_type_dict)
 
   return out
@@ -151,6 +151,8 @@ def batter_stats(sav: pd.DataFrame) -> pd.DataFrame:
   out.loc[(out["is_atbat"]) & (out["estimated_woba_using_speedangle"].isna()), "estimated_woba_using_speedangle"] = 0
 
   out.loc[out["is_walk"], "estimated_woba_using_speedangle"] = .7
+
+  out["is_intentional_walk"] = (out["des"].str.contains("intentionally walks", na=False)) & (out["pitch_number"]  == 1)
 
   # Need to explore
   out["blast_criteria_1"] = ((out["launch_speed"] >= 100) & out["is_ball_in_play"])
