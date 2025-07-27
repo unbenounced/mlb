@@ -35,11 +35,13 @@ ab_flag_list = [
   "home_run", "triple", "field_error", "double_play", "fielders_choice_out", "fielders_choice", "sac_fly_double_play",
   "triple_play", "batter_interference", "sac_bunt_double_play"
 ]
-is_hit_list = ["single", "double", "triple", "homerun"]
+is_hit_list = ["single", "double", "triple", "home_run"]
 single_list = ["single"]
 double_list = ["double"]
 triple_list = ["triple"]
 homerun_list = ["homerun"]
+sac_fly_list = ["sac_fly", "sac_fly_double_play"]
+
 swing_list = [
   "foul_tip", "swinging_strike", "bunt_foul_tip", "foul", "hit_into_play_no_out", "hit_into_play",
   "hit_into_play_score", "missed_bunt", "swinging_strike_blocked", "foul_bunt"

@@ -1,4 +1,6 @@
 # %%
+from __future__ import annotations
+
 from pathlib import Path
 
 import pandas as pd
@@ -14,20 +16,23 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 sav = pd.read_csv(DATA_DIR / "add_ons.csv")
 
 # %%
-pg = sav.loc[sav["game_pk"] == 777063].sort_values(by=["at_bat_number", "pitch_number"])
+regular_season = sav.loc[sav["game_type"] == "R"]
+
 # %%
-pg.head()
+slashline = regular_season.groupby(["batter_name", "batter"])[["is_atbat", "is_hit"]].sum().reset_index()
+slashline.head()
+
 # %%
-pg = pg[["batter_name", "pitcher_name", "on_3b", "on_2b", "on_1b", "outs_when_up", "inning", "at_bat_number", "pitch_number"]]
+
+slashline["avg"] = round(slashline["is_hit"] / slashline["is_atbat"], 3)
+slashline_filtered = slashline[slashline["is_atbat"] > 100].sort_values(by="avg", ascending=False)
+slashline_filtered.head()
 # %%
-pg.loc[(pg["batter_name"] == "Max Kepler") & (pg["inning"] == 10) & (pg["des"].str.contains("intentionally walks", na=False))]
 # %%
-iw = sav.loc[sav["des"].str.contains("intentionally walks", na=False)]
+slashline.loc[slashline["batter"] == 701762]
 # %%
-iw.sort_values
+slashline.head()
 # %%
-iw["events"].value_counts()
-# %%
-# intentional walk
-sav.loc[(sav["events"].isna().sum()) & (sav["des"].str.contains("intentionally walks", na=False)) & (sav["pitch_number"]  == 1)]
-# %%
+# xwOBA, xBA, xSLG, avg_exit_velo, barrel_pct, hard_hit_pct, la_sweet_spot_pct, bat_speed, squared_up_pct, chase_pct, whiff_pct, k_pct, bb_pct
+
+def batting_stats(sav: pd.DataFrame) -> pd.DataFrame:
