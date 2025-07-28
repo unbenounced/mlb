@@ -13,50 +13,88 @@ if not DATA_DIR.exists():
   DATA_DIR = Path("savant/data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
-sav = pd.read_csv(DATA_DIR / "add_ons.csv")
+add_ons = pd.read_csv(DATA_DIR / "add_ons.csv")
 
 # %%
-regular_season = sav.loc[sav["game_type"] == "R"]
+regular_season = add_ons.loc[add_ons["game_type"] == "R"]
 
 # %%
-# xwOBA, xBA, xSLG, avg_exit_velo, barrel_pct, hard_hit_pct, la_sweet_spot_pct, bat_speed, squared_up_pct, chase_pct, whiff_pct, k_pct, bb_pct
+# [x] xwOBA, []xBA, xSLG, avg_exit_velo, barrel_pct, hard_hit_pct, la_sweet_spot_pct, bat_speed, squared_up_pct, chase_pct, whiff_pct, k_pct, bb_pct
 
-def batting_stats(sav: pd.DataFrame) -> pd.DataFrame:
-  out = sav.copy()
+def get_xwOBA(add_ons: pd.DataFrame) -> pd.DataFrame:
+  add_ons_copy = add_ons.copy()
 
-  sc = out.groupby(["batter_name", "batter"])[["is_atbat", "is_walk", "is_hit_by_pitch", "is_sac_fly"]].sum().reset_index()
+  # Summarize plate appearance events
+  stats_summarized = (
+    add_ons_copy.groupby(["batter_name", "batter"])
+    .agg({
+      "is_atbat": "sum", 
+      "is_walk": "sum", 
+      "is_hit_by_pitch": "sum", 
+      "is_sac_fly": "sum"
+    })
+    .reset_index()
+  )
 
   # Calculate xwOBAcon
-  # Filter for only batted balls
-  batted_balls = out[out["type"] == "X"]
-  # Drop missing xwOBA values
-  batted_balls = batted_balls[batted_balls["estimated_woba_using_speedangle"].notna()]
-  # Group by batter and sum xwOBA contributions
+  # Filter for only balls hit in play and with valid xwOBA estimate
+  batted_balls = add_ons_copy[
+    add_ons_copy["is_ball_in_play"] & 
+    (add_ons_copy["estimated_woba_using_speedangle"].notna())
+  ]
+
+  # Count balls put in play per batter
+  batted_balls_count = (
+    batted_balls.groupby(["batter_name", "batter"])
+    .size()
+    .reset_index(name="batted_balls")
+  )
+
+  # Mean xwOBAcon per batter
   xwOBAcon = (
     batted_balls.groupby(["batter_name", "batter"])["estimated_woba_using_speedangle"]
-    .sum()
+    .mean()
     .reset_index()
     .rename(columns={"estimated_woba_using_speedangle": "xwOBAcon"})
   )
 
-  sc = sc.merge(xwOBAcon, how="left", on=["batter_name", "batter"])
+  # Merge into summary stats
+  stats_summarized = stats_summarized.merge(xwOBAcon, how="left", on=["batter_name", "batter"])
+  stats_summarized = stats_summarized.merge(batted_balls_count, how="left", on=["batter_name", "batter"])
 
-  # Calculate league weight for walks (excluding intential walks)
-  total_woba_from_walks = out.loc[out["is_walk"]]["woba_value"].sum()
-  num_walks = out["is_walk"].sum()
-  wBB = total_woba_from_walks / num_walks
+  # Fill missing values
+  stats_summarized["xwOBAcon"] = stats_summarized["xwOBAcon"].fillna(0)
+  stats_summarized["batted_balls"] = stats_summarized["batted_balls"].fillna(0)
 
-  # Calculate league weight for hit by pitch
-  total_woba_from_hbp = out.loc[out["is_hit_by_pitch"]]["woba_value"].sum()
-  num_hbp = out["is_hit_by_pitch"].sum()
-  wHBP = total_woba_from_hbp / num_hbp
+  # Calculate league weights (excluding intentional walks if needed)
+  total_woba_from_walks = add_ons_copy.loc[add_ons_copy["is_walk"], "woba_value"].sum()
+  num_walks = add_ons_copy["is_walk"].sum()
+  wBB = total_woba_from_walks / num_walks if num_walks > 0 else 0
 
-  sc["xwOBA"] = round((sc["xwOBAcon"] + wBB * sc["is_walk"] + wHBP * sc["is_hit_by_pitch"]) / (sc["is_atbat"] + sc["is_walk"] + sc["is_sac_fly"] + sc["is_hit_by_pitch"]), 3)
+  total_woba_from_hbp = stats_summarized.loc[stats_summarized["is_hit_by_pitch"], "woba_value"].sum()
+  num_hbp = stats_summarized["is_hit_by_pitch"].sum()
+  wHBP = total_woba_from_hbp / num_hbp if num_hbp > 0 else 0
 
-  return sc
+  # Calculate xwOBA
+  numerator = (
+    stats_summarized["xwOBAcon"] * stats_summarized["batted_balls"] + 
+    wBB * stats_summarized["is_walk"] + 
+    wHBP * stats_summarized["is_hit_by_pitch"]
+  )
+  denominator = (
+    stats_summarized["is_atbat"] + 
+    stats_summarized["is_walk"] + 
+    stats_summarized["is_hit_by_pitch"] +
+    stats_summarized["is_sac_fly"]
+  )
+  stats_summarized["xwOBA"] =  numerator / denominator.replace(0, pd.NA)
+
+  return stats_summarized
+
+
 # %%
-df = batting_stats(regular_season)
-df.head()
+def statcast_batting_stats(add_ons: pd.DataFrame) -> pd.DataFrame:
+  add_ons_copy = add_ons
+  add_ons_copy = get_xwOBA(add_ons_copy)
+  return add_ons_copy
 
-
-# %%

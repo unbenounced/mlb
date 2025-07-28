@@ -40,7 +40,7 @@ single_list = ["single"]
 double_list = ["double"]
 triple_list = ["triple"]
 homerun_list = ["homerun"]
-sac_fly_list = ["sac_fly"]
+sac_fly_list = ["sac_fly", "sac_fly_double_play"]
 
 swing_list = [
   "foul_tip", "swinging_strike", "bunt_foul_tip", "foul", "hit_into_play_no_out", "hit_into_play",
