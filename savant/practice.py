@@ -19,8 +19,7 @@ add_ons = pd.read_csv(DATA_DIR / "add_ons.csv")
 regular_season = add_ons.loc[add_ons["game_type"] == "R"]
 
 # %%
-# [x] xwOBA, []xBA, xSLG, avg_exit_velo, barrel_pct, hard_hit_pct, la_sweet_spot_pct, bat_speed, squared_up_pct, chase_pct, whiff_pct, k_pct, bb_pct
-
+# [x] xwOBA, [/]xBA, []xSLG, []avg_exit_velo, []barrel_pct, []hard_hit_pct, []la_sweet_spot_pct, []bat_speed, []squared_up_pct, []chase_pct, []whiff_pct, []k_pct, []bb_pct
 def get_xwOBA(add_ons: pd.DataFrame) -> pd.DataFrame:
   add_ons_copy = add_ons.copy()
 
@@ -71,7 +70,7 @@ def get_xwOBA(add_ons: pd.DataFrame) -> pd.DataFrame:
   num_walks = add_ons_copy["is_walk"].sum()
   wBB = total_woba_from_walks / num_walks if num_walks > 0 else 0
 
-  total_woba_from_hbp = stats_summarized.loc[stats_summarized["is_hit_by_pitch"], "woba_value"].sum()
+  total_woba_from_hbp = add_ons_copy.loc[add_ons_copy["is_hit_by_pitch"], "woba_value"].sum()
   num_hbp = stats_summarized["is_hit_by_pitch"].sum()
   wHBP = total_woba_from_hbp / num_hbp if num_hbp > 0 else 0
 
@@ -91,10 +90,35 @@ def get_xwOBA(add_ons: pd.DataFrame) -> pd.DataFrame:
 
   return stats_summarized
 
+# %% 
+def get_xBA(add_ons_df: pd.DataFrame) -> pd.DataFrame:
+  add_ons_copy = add_ons.copy()
+  # stats_for_xba = add_ons_copy.loc[
+  #   (add_ons_copy["estimated_ba_using_speedangle"].notna()) & 
+  #   (add_ons_copy["type"] == "X")
+  # ]
+
+  # xba_df = (.'
+  #   stats_for_xba.groupby(["batter_name", "batter"])["estimated_ba_using_speedangle"].agg(["mean", "count"])
+  #   .reset_index()
+  #   .rename(columns={"mean": "xBA"})
+  # )
+
+  bip = add_ons_copy.loc[(add_ons_copy["is_ball_in_play"]) & (add_ons_copy["estimated_ba_using_speedangle"]notna())]
+
+  return bip
 
 # %%
-def statcast_batting_stats(add_ons: pd.DataFrame) -> pd.DataFrame:
-  add_ons_copy = add_ons
-  add_ons_copy = get_xwOBA(add_ons_copy)
-  return add_ons_copy
+def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
+  xwOBA = get_xwOBA(add_ons_df)
+  xBA = get_xBA(add_ons_df)
 
+  return xBA
+
+
+# %%
+statcast_batting_stats(regular_season)
+
+# %%
+add_ons.head()
+# %%

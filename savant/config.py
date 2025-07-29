@@ -39,7 +39,7 @@ is_hit_list = ["single", "double", "triple", "home_run"]
 single_list = ["single"]
 double_list = ["double"]
 triple_list = ["triple"]
-homerun_list = ["homerun"]
+homerun_list = ["home_run"]
 sac_fly_list = ["sac_fly", "sac_fly_double_play"]
 
 swing_list = [
