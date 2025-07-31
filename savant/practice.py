@@ -92,26 +92,28 @@ def get_xwOBA(add_ons_df: pd.DataFrame) -> pd.DataFrame:
   return stats_summarized
 
 # %% 
-def get_xBA(add_ons_df: pd.DataFrame) -> pd.DataFrame:
+def get_xBA(add_ons_df: pd.DataFrame, xwOBA_df: pd.DataFrame) -> pd.DataFrame:
   add_ons_copy = add_ons_df.copy()
 
   xba_df = (
     add_ons_copy.groupby(["batter_name", "batter"])
     .agg(
-      xba_sum=("estimated_ba_using_speedangle", "sum"),
-      AB=("estimated_ba_using_speedangle", "count")
+      xba_sum = ("estimated_ba_using_speedangle", "sum"),
+      AB = ("is_atbat", "sum")
     )
     .reset_index()
   )
 
   xba_df["xBA"] = xba_df["xba_sum"] / xba_df["AB"]
+
+  advanced_stats = xwOBA_df.merge(xba_df, how="inner", on=["batter_name", "batter"])
   
-  return xba_df[["batter_name", "batter", "AB", "xBA"]]
+  return advanced_stats [["batter_name", "batter", "AB", "xBA", "xwOBA"]]
 
 # %%
 def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
   xwOBA = get_xwOBA(add_ons_df)
-  xBA = get_xBA(add_ons_df)
+  xBA = get_xBA(add_ons_df, xwOBA)
 
   return xBA
 
@@ -119,3 +121,5 @@ def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
 # %%
 n_df = statcast_batting_stats(regular_season)
 n_df
+
+# %%
