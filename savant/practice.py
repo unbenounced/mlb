@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 import numpy as np
+import config as cfg
 
 pd.set_option('display.max_columns', 500)
 
@@ -20,8 +21,8 @@ regular_season = add_ons.loc[add_ons["game_type"] == "R"]
 
 # %%
 # [x] xwOBA, [/]xBA, []xSLG, []avg_exit_velo, []barrel_pct, []hard_hit_pct, []la_sweet_spot_pct, []bat_speed, []squared_up_pct, []chase_pct, []whiff_pct, []k_pct, []bb_pct
-def get_xwOBA(add_ons: pd.DataFrame) -> pd.DataFrame:
-  add_ons_copy = add_ons.copy()
+def get_xwOBA(add_ons_df: pd.DataFrame) -> pd.DataFrame:
+  add_ons_copy = add_ons_df.copy()
 
   # Summarize plate appearance events
   stats_summarized = (
@@ -92,21 +93,20 @@ def get_xwOBA(add_ons: pd.DataFrame) -> pd.DataFrame:
 
 # %% 
 def get_xBA(add_ons_df: pd.DataFrame) -> pd.DataFrame:
-  add_ons_copy = add_ons.copy()
-  # stats_for_xba = add_ons_copy.loc[
-  #   (add_ons_copy["estimated_ba_using_speedangle"].notna()) & 
-  #   (add_ons_copy["type"] == "X")
-  # ]
+  add_ons_copy = add_ons_df.copy()
 
-  # xba_df = (.'
-  #   stats_for_xba.groupby(["batter_name", "batter"])["estimated_ba_using_speedangle"].agg(["mean", "count"])
-  #   .reset_index()
-  #   .rename(columns={"mean": "xBA"})
-  # )
+  xba_df = (
+    add_ons_copy.groupby(["batter_name", "batter"])
+    .agg(
+      xba_sum=("estimated_ba_using_speedangle", "sum"),
+      AB=("estimated_ba_using_speedangle", "count")
+    )
+    .reset_index()
+  )
 
-  bip = add_ons_copy.loc[(add_ons_copy["is_ball_in_play"]) & (add_ons_copy["estimated_ba_using_speedangle"]notna())]
-
-  return bip
+  xba_df["xBA"] = xba_df["xba_sum"] / xba_df["AB"]
+  
+  return xba_df[["batter_name", "batter", "AB", "xBA"]]
 
 # %%
 def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
@@ -117,8 +117,5 @@ def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
 
 
 # %%
-statcast_batting_stats(regular_season)
-
-# %%
-add_ons.head()
-# %%
+n_df = statcast_batting_stats(regular_season)
+n_df

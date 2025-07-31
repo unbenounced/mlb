@@ -31,9 +31,14 @@ pa_flag_list = [
   "batter_interference", "sac_bunt_double_play"
 ]
 ab_flag_list = [
-  "field_out", "strikeout", "double", "strikeout_double_play", "single", "force_out", "grounded_into_double_play",
-  "home_run", "triple", "field_error", "double_play", "fielders_choice_out", "fielders_choice", "sac_fly_double_play",
-  "triple_play", "batter_interference", "sac_bunt_double_play"
+  "field_out", "strikeout", "single", "double", "home_run", "force_out", "grounded_into_double_play", "strikeout_double_play",
+  "triple", "field_error", "double_play", "fielders_choice_out", "fielders_choice", "sac_fly_double_play", "triple_play", 
+  "batter_interference", "sac_bunt_double_play"
+]
+xBA_ab_flag = [
+  "field_out", "strikeout", "single", "walk", "double", "home_run", "force_out", "grounded_into_double_play", "hit_by_pitch",
+  "sac_fly", "field_error", "triple", "sac_bunt", "fielders_choice", "double_play", "truncated_pa", "fielders_choice_out",
+  "strikeout_double_play", "catcher_interf", "sac_fly_double_play", "triple_play"
 ]
 is_hit_list = ["single", "double", "triple", "home_run"]
 single_list = ["single"]
