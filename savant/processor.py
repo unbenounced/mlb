@@ -124,6 +124,7 @@ def batter_stats(sav: pd.DataFrame) -> pd.DataFrame:
   out["is_triple"] = out["events"].isin(cfg.triple_list)
   out["is_homerun"] = out["events"].isin(cfg.homerun_list)
   out["is_sac_fly"] = out["events"].isin(cfg.sac_fly_list)
+  out["is_sac_bunt"] = out["events"].isin(cfg.sac_bunt_list)
   out["is_strikeout"] = out["events"].isin(cfg.strikeout_list)
   out["is_walk"] = out["events"].isin(cfg.walk_list)
   out["is_hit_by_pitch"] = out["events"].isin(cfg.hit_by_pitch)

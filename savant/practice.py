@@ -120,6 +120,6 @@ def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
 
 # %%
 n_df = statcast_batting_stats(regular_season)
-n_df
+n_df.loc[n_df["AB"] > 100].sort_values("xBA", ascending=False).head(10)
 
 # %%
