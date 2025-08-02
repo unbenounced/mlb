@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import config as cfg
+import loader
 from unidecode import unidecode
 
 # ──────────────────────── Paths ────────────────────────
@@ -12,9 +13,6 @@ DATA_DIR = Path("data")
 if not DATA_DIR.exists():
   DATA_DIR = Path("savant/data")
 DATA_DIR.mkdir(parents=True, exist_ok=True)
-
-lookup = pd.read_csv(DATA_DIR / "IDLookupTable.csv")
-sav = pd.read_csv(DATA_DIR / "sav25.csv")
 
 # ──────────────────────── Helpers ────────────────────────
 def normalize_names(sav: pd.DataFrame, lookup: pd.DataFrame) -> pd.DataFrame:
@@ -209,8 +207,19 @@ def add_ons(sav: pd.DataFrame, lookup: pd.DataFrame) -> pd.DataFrame:
 
   return sav
 
-pd.set_option('display.max_columns', 500)
+# ────────────────── Main ──────────────────
+def main() -> None:
+  lookup = pd.read_csv(DATA_DIR / "IDLookupTable.csv")
+  try:
+    sav = pd.read_csv(DATA_DIR / "sav25.csv")
+  except FileNotFoundError:
+    today = pd.Timestamp.today().normalize()
+    yesterday = today - pd.Timedelta(days=1)
+    sav = loader.load_sav("2025-02-20", yesterday.strftime("%Y-%m-%d"))
 
-sav = add_ons(sav, lookup)
+  sav = add_ons(sav, lookup)
+  sav.to_csv(DATA_DIR / "add_ons.csv", index=False)
+  print("add_ons updated →", DATA_DIR / "add_ons.csv")
 
-sav.to_csv(DATA_DIR / "add_ons.csv", index=False)
+if __name__ == "__main__":
+  main()

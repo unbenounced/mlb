@@ -6,6 +6,11 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import config as cfg
+import loader
+import processor
+
+loader.main()
+processor.main()
 
 pd.set_option('display.max_columns', 500)
 
@@ -93,25 +98,27 @@ def get_xwOBA(add_ons_df: pd.DataFrame) -> pd.DataFrame:
 
 # %% 
 def get_xBA(add_ons_df: pd.DataFrame, xwOBA_df: pd.DataFrame) -> pd.DataFrame:
-  add_ons_copy = add_ons_df.copy()  
+  add_ons_copy = add_ons_df.copy()
 
   xstats_df = (
     add_ons_copy.groupby(["batter_name", "batter"])
     .agg(
       xba_sum = ("estimated_ba_using_speedangle", "sum"),
       AB = ("is_atbat", "sum"),
+      batted_balls = ("is_ball_in_play", "sum"),
       xslg_sum = ("estimated_slg_using_speedangle", "sum"), 
-      xslg_mean = ("estimated_slg_using_speedangle", "mean")
+      exit_velo_sum = ("launch_speed", "mean")
     )
     .reset_index()
   )
-
+  print(xstats_df["exit_velo_sum"])
   xstats_df["xBA"] = xstats_df["xba_sum"] / xstats_df["AB"]
   xstats_df["xSLG"] = xstats_df["xslg_sum"] / xstats_df["AB"]
+  xstats_df["avg_exit_velo"] = xstats_df["exit_velo_sum"] / xstats_df["AB"] 
 
   advanced_stats = xwOBA_df.merge(xstats_df, how="inner", on=["batter_name", "batter"])
   
-  return advanced_stats [["batter_name", "batter", "AB", "xBA", "xwOBA", "xSLG"]]
+  return advanced_stats[["batter_name", "batter", "AB", "xBA", "xwOBA", "xSLG", "avg_exit_velo"]]
 
 # %%
 def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
@@ -130,3 +137,4 @@ add_ons.loc[add_ons["is_sac_fly"], ["estimated_woba_using_speedangle"]]
 # add_ons["events"].value_counts()
 
 # %%
+add_ons["launch_speed"]
