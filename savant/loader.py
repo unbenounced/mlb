@@ -100,6 +100,9 @@ def main() -> None:
         yesterday.strftime("%Y-%m-%d"),
       )
       sav25 = pd.concat([sav25, missing], ignore_index=True)
+    else:
+      print("sav25 is up to date →", DATA_DIR / "sav25.csv")
+      return
   except FileNotFoundError:
     sav25 = load_sav("2025-02-20", yesterday.strftime("%Y-%m-%d"))
 
