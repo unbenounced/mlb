@@ -100,25 +100,36 @@ def get_xwOBA(add_ons_df: pd.DataFrame) -> pd.DataFrame:
 def get_xBA(add_ons_df: pd.DataFrame, xwOBA_df: pd.DataFrame) -> pd.DataFrame:
   add_ons_copy = add_ons_df.copy()
 
+  # df for exit velocity avg
+  bip_df = add_ons_copy.loc[add_ons_copy["is_ball_in_play"]]
+
   xstats_df = (
     add_ons_copy.groupby(["batter_name", "batter"])
     .agg(
       xba_sum = ("estimated_ba_using_speedangle", "sum"),
       AB = ("is_atbat", "sum"),
-      batted_balls = ("is_ball_in_play", "sum"),
-      xslg_sum = ("estimated_slg_using_speedangle", "sum"), 
-      exit_velo_sum = ("launch_speed", "mean")
+      bip = ("is_ball_in_play", "sum"),
+      xslg_sum = ("estimated_slg_using_speedangle", "sum"),
     )
     .reset_index()
   )
-  print(xstats_df["exit_velo_sum"])
+
+  exit_velo_df = (
+    bip_df.groupby(["batter", "batter_name"])
+    .agg(
+      exit_velo_sum = ("launch_speed", "sum"),
+    )
+  )
+
+  xstats_df = xstats_df.merge(exit_velo_df, how="inner", on=["batter", "batter_name"])
+
   xstats_df["xBA"] = xstats_df["xba_sum"] / xstats_df["AB"]
   xstats_df["xSLG"] = xstats_df["xslg_sum"] / xstats_df["AB"]
-  xstats_df["avg_exit_velo"] = xstats_df["exit_velo_sum"] / xstats_df["AB"] 
+  xstats_df["avg_exit_velo"] = xstats_df["exit_velo_sum"] / xstats_df["bip"]
 
   advanced_stats = xwOBA_df.merge(xstats_df, how="inner", on=["batter_name", "batter"])
   
-  return advanced_stats[["batter_name", "batter", "AB", "xBA", "xwOBA", "xSLG", "avg_exit_velo"]]
+  return advanced_stats[["batter_name", "batter", "AB", "xBA", "xwOBA", "xSLG", "bip", "avg_exit_velo"]]
 
 # %%
 def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
@@ -130,11 +141,12 @@ def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
 
 # %%
 n_df = statcast_batting_stats(regular_season)
-n_df.loc[n_df["AB"] > 100].sort_values("xSLG", ascending=False).head(10)
+n_df.loc[n_df["AB"] > 100].sort_values("avg_exit_velo", ascending=False).head(10)
 
 # %%
-add_ons.loc[add_ons["is_sac_fly"], ["estimated_woba_using_speedangle"]]
+add_ons["batter_name"].isna().sum()
 # add_ons["events"].value_counts()
 
 # %%
-add_ons["launch_speed"]
+add_ons[["batter_name","launch_speed"]].sort_values("launch_speed", ascending=False)
+# %%
