@@ -135,9 +135,36 @@ def batter_stats(sav: pd.DataFrame) -> pd.DataFrame:
   out["is_popup"] = out["bb_type"].isin(cfg.popup_list)
 
   out["launch_speed_angle"] = out["launch_speed_angle"].fillna(0)
-  out["is_barrel"] = out["launch_speed_angle"] == 6
+  #out["is_barrel"] = out["launch_speed_angle"] == 6
   out["is_solid"] = out["launch_speed_angle"] == 5
   out["is_weak"] = (out["launch_speed_angle"] > 0) & (out["launch_speed_angle"] < 4)
+  
+  barrel_criteria_1 = (out["launch_speed"] >= 98) & (out["launch_angle"] >= 26) & (out["launch_angle"] <= 30) & (out["is_ball_in_play"])
+  barrel_criteria_2 = (out["launch_speed"] >= 99) & (out["launch_angle"] >= 25) & (out["launch_angle"] <= 31) & (out["is_ball_in_play"])
+  barrel_criteria_3 = (out["launch_speed"] >= 100) & (out["launch_angle"] >= 24) & (out["launch_angle"] <= 33) & (out["is_ball_in_play"])
+  barrel_criteria_4 = (out["launch_speed"] >= 101) & (out["launch_angle"] >= 23) & (out["launch_angle"] <= 34) & (out["is_ball_in_play"])
+  barrel_criteria_5 = (out["launch_speed"] >= 102) & (out["launch_angle"] >= 22) & (out["launch_angle"] <= 35) & (out["is_ball_in_play"])
+  barrel_criteria_6 = (out["launch_speed"] >= 103) & (out["launch_angle"] >= 21) & (out["launch_angle"] <= 36) & (out["is_ball_in_play"])
+  barrel_criteria_7 = (out["launch_speed"] >= 104) & (out["launch_angle"] >= 20) & (out["launch_angle"] <= 37) & (out["is_ball_in_play"])
+  barrel_criteria_8 = (out["launch_speed"] >= 105) & (out["launch_angle"] >= 19) & (out["launch_angle"] <= 38) & (out["is_ball_in_play"])
+  barrel_criteria_9 = (out["launch_speed"] >= 106) & (out["launch_angle"] >= 18) & (out["launch_angle"] <= 39) & (out["is_ball_in_play"])
+  barrel_criteria_10 = (out["launch_speed"] >= 107) & (out["launch_angle"] >= 17) & (out["launch_angle"] <= 40) & (out["is_ball_in_play"])
+  barrel_criteria_11 = (out["launch_speed"] >= 108) & (out["launch_angle"] >= 16) & (out["launch_angle"] <= 41) & (out["is_ball_in_play"])
+  barrel_criteria_12 = (out["launch_speed"] >= 109) & (out["launch_angle"] >= 15) & (out["launch_angle"] <= 42) & (out["is_ball_in_play"])
+  barrel_criteria_13 = (out["launch_speed"] >= 110) & (out["launch_angle"] >= 14) & (out["launch_angle"] <= 43) & (out["is_ball_in_play"])
+  barrel_criteria_14 = (out["launch_speed"] >= 111) & (out["launch_angle"] >= 13) & (out["launch_angle"] <= 44) & (out["is_ball_in_play"])
+  barrel_criteria_15 = (out["launch_speed"] >= 112) & (out["launch_angle"] >= 12) & (out["launch_angle"] <= 45) & (out["is_ball_in_play"])
+  barrel_criteria_16 = (out["launch_speed"] >= 113) & (out["launch_angle"] >= 11) & (out["launch_angle"] <= 46) & (out["is_ball_in_play"])
+  barrel_criteria_17 = (out["launch_speed"] >= 114) & (out["launch_angle"] >= 10) & (out["launch_angle"] <= 47) & (out["is_ball_in_play"])
+  barrel_criteria_18 = (out["launch_speed"] >= 115) & (out["launch_angle"] >= 9) & (out["launch_angle"] <= 48) & (out["is_ball_in_play"])
+  barrel_criteria_19 = (out["launch_speed"] >= 116) & (out["launch_angle"] >= 8) & (out["launch_angle"] <= 50) & (out["is_ball_in_play"])
+
+  out["is_barrel"] = (
+    barrel_criteria_1 | barrel_criteria_2 | barrel_criteria_3 | barrel_criteria_4 | barrel_criteria_5 | barrel_criteria_6 |
+    barrel_criteria_7 | barrel_criteria_8 | barrel_criteria_9 | barrel_criteria_10 | barrel_criteria_11 | barrel_criteria_12 |
+    barrel_criteria_13 | barrel_criteria_14 | barrel_criteria_15 | barrel_criteria_16 | barrel_criteria_17 | barrel_criteria_18 |
+    barrel_criteria_19
+  )
 
   out["launch_speed_bip"] = np.where(out["is_ball_in_play"], out["launch_speed"], np.nan)
   out["launch_angle_bip"] = np.where(out["is_ball_in_play"], out["launch_angle"], np.nan)
