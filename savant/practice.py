@@ -21,11 +21,9 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 add_ons = pd.read_csv(DATA_DIR / "add_ons.csv")
 
-# %%
 regular_season = add_ons.loc[add_ons["game_type"] == "R"]
 
 # %%
-# [x] xwOBA, [/]xBA, []xSLG, []avg_exit_velo, []barrel_pct, []hard_hit_pct, []la_sweet_spot_pct, []bat_speed, []squared_up_pct, []chase_pct, []whiff_pct, []k_pct, []bb_pct
 def get_xwOBA(add_ons_df: pd.DataFrame) -> pd.DataFrame:
   add_ons_copy = add_ons_df.copy()
 
@@ -96,7 +94,6 @@ def get_xwOBA(add_ons_df: pd.DataFrame) -> pd.DataFrame:
 
   return stats_summarized
 
-# %% 
 def get_xBA(add_ons_df: pd.DataFrame, xwOBA_df: pd.DataFrame) -> pd.DataFrame:
   add_ons_copy = add_ons_df.copy()
 
@@ -110,6 +107,7 @@ def get_xBA(add_ons_df: pd.DataFrame, xwOBA_df: pd.DataFrame) -> pd.DataFrame:
       AB = ("is_atbat", "sum"),
       bip = ("is_ball_in_play", "sum"),
       xslg_sum = ("estimated_slg_using_speedangle", "sum"),
+      barrel_sum = ("is_barrel", "sum")
     )
     .reset_index()
   )
@@ -126,10 +124,12 @@ def get_xBA(add_ons_df: pd.DataFrame, xwOBA_df: pd.DataFrame) -> pd.DataFrame:
   xstats_df["xBA"] = xstats_df["xba_sum"] / xstats_df["AB"]
   xstats_df["xSLG"] = xstats_df["xslg_sum"] / xstats_df["AB"]
   xstats_df["avg_exit_velo"] = xstats_df["exit_velo_sum"] / xstats_df["bip"]
+  xstats_df["barrel_percent"] = xstats_df["barrel_sum"] / xstats_df["bip"]
+
 
   advanced_stats = xwOBA_df.merge(xstats_df, how="inner", on=["batter_name", "batter"])
   
-  return advanced_stats[["batter_name", "batter", "AB", "xBA", "xwOBA", "xSLG", "bip", "avg_exit_velo"]]
+  return advanced_stats[["batter_name", "batter", "AB", "xBA", "xwOBA", "xSLG", "bip", "avg_exit_velo", "barrel_percent"]]
 
 # %%
 def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
@@ -141,12 +141,8 @@ def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
 
 # %%
 n_df = statcast_batting_stats(regular_season)
-n_df.loc[n_df["AB"] > 100].sort_values("avg_exit_velo", ascending=False).head(10)
+n_df.loc[n_df["AB"] > 100].sort_values("barrel_percent", ascending=False).head(10)
 
 # %%
-add_ons["batter_name"].isna().sum()
-# add_ons["events"].value_counts()
-
-# %%
-add_ons[["batter_name","launch_speed"]].sort_values("launch_speed", ascending=False)
+regular_season.loc[(regular_season["batter"] == 656941) & (regular_season["launch_speed_angle"] == 6), ["launch_angle"]].value_counts().sum()
 # %%
