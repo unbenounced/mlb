@@ -135,7 +135,6 @@ def batter_stats(sav: pd.DataFrame) -> pd.DataFrame:
   out["is_popup"] = out["bb_type"].isin(cfg.popup_list)
 
   out["launch_speed_angle"] = out["launch_speed_angle"].fillna(0)
-  #out["is_barrel"] = out["launch_speed_angle"] == 6
   out["is_solid"] = out["launch_speed_angle"] == 5
   out["is_weak"] = (out["launch_speed_angle"] > 0) & (out["launch_speed_angle"] < 4)
   
@@ -190,7 +189,7 @@ def batter_stats(sav: pd.DataFrame) -> pd.DataFrame:
   out["blast_criteria_3"] = (out["launch_angle"] > 28) & ((out["launch_angle"] - 28) <= ((out["launch_speed"] - 100) * 3))
   out["is_blast"] = out["blast_criteria_1"] & out["blast_criteria_2"] | out["blast_criteria_3"]
 
-  out["is_hardhit"] = (out["launch_speed"] >= 95) & out["is_atbat"]
+  out["is_hardhit"] = (out["launch_speed"] >= 95) & out["is_ball_in_play"]
 
   out["is_barrel_homerun"] = out["is_barrel"] & out["is_homerun"]
   out["is_blast_homerun"] = out["is_blast"] & out["is_homerun"]
