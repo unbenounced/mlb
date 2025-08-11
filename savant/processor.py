@@ -194,6 +194,7 @@ def batter_stats(sav: pd.DataFrame) -> pd.DataFrame:
   out["is_barrel_homerun"] = out["is_barrel"] & out["is_homerun"]
   out["is_blast_homerun"] = out["is_blast"] & out["is_homerun"]
   out["is_hardhit_hit"] = out["is_hardhit"] & out["is_hit"]
+  out["is_la_sweet_spot"] = (out["launch_angle"] > 8) & (out["launch_angle"] < 32)
 
   return out
 

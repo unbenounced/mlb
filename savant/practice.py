@@ -108,7 +108,8 @@ def get_xBA(add_ons_df: pd.DataFrame, xwOBA_df: pd.DataFrame) -> pd.DataFrame:
       bip = ("is_ball_in_play", "sum"),
       xslg_sum = ("estimated_slg_using_speedangle", "sum"),
       barrel_sum = ("is_barrel", "sum"),
-      hard_hit_sum = ("is_hardhit", "sum")
+      hard_hit_sum = ("is_hardhit", "sum"),
+      sweet_spot_sum = ("is_la_sweet_spot", "sum")
     )
     .reset_index()
   )
@@ -127,11 +128,12 @@ def get_xBA(add_ons_df: pd.DataFrame, xwOBA_df: pd.DataFrame) -> pd.DataFrame:
   xstats_df["avg_exit_velo"] = xstats_df["exit_velo_sum"] / xstats_df["bip"]
   xstats_df["barrel_percent"] = xstats_df["barrel_sum"] / xstats_df["bip"]
   xstats_df["hardhit_percent"] = xstats_df["hard_hit_sum"] / xstats_df["bip"]
+  xstats_df["sweet_spot_percent"] = xstats_df["sweet_spot_sum"] / xstats_df["bip"]
 
 
   advanced_stats = xwOBA_df.merge(xstats_df, how="inner", on=["batter_name", "batter"])
   
-  return advanced_stats[["batter_name", "batter", "AB", "xBA", "xwOBA", "xSLG", "bip", "avg_exit_velo", "barrel_percent", "hardhit_percent"]]
+  return advanced_stats[["batter_name", "batter", "AB", "xBA", "xwOBA", "xSLG", "bip", "avg_exit_velo", "barrel_percent", "hardhit_percent", "sweet_spot_percent"]]
 
 # %%
 def statcast_batting_stats(add_ons_df: pd.DataFrame) -> pd.DataFrame:
